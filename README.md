@@ -48,7 +48,7 @@ Consider a global scenario, such as a national election in the United States. Tr
 **Installation:**
 To begin installation git clone repo into preferred directory
 
-git clone https://github.com/Johnkayode/Votenow.git
+git clone 
 Install required packages for the webapp
 
 pip install -r requirements.txt
