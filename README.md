@@ -46,7 +46,7 @@ Our project introduces an inventive e-voting authentication system that merges Q
 Consider a global scenario, such as a national election in the United States. Traditionally, voters must authenticate themselves at designated polling stations to cast their votes. Following the close of polling sites, manual vote tabulation occurs, consuming significant time and resources. Responding to this, electronic voting systems, particularly those online, have gained traction. Authentication in this context hinges on QR-codes, eliminating the need for technical expertise. The use of a QR-code reader, often integrated into smartphones or tablets, facilitates login to the voting platform, resulting in an intuitive and user-friendly process.
 
 **Installation:**
-To begin installation git clone repo into preferred directory
+To begin installation git clone repo into preferred directory https://github.com/RijulBhardwaj/Mein-Fuhrer
 
 git clone 
 Install required packages for the webapp
