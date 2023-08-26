@@ -1,1 +1,281 @@
-SO thiis is how it goes
+#Now we have all that let's begin... To install the requirement.txt file in your terminal type:
+
+pip install -r install requirements.txt
+#This will install all modules and packages used in this project
+
+#Once the installation process is done you should have all packages for this project.
+
+
+
+#Creating a project
+
+
+
+django-admin startproject <whatevernameyouchoose>
+# so in my case I will choose vote
+django-admin startproject vote
+
+#Creating an app
+#Once you create a project in Django it is a convention you create an app along with side this, so to do this
+
+#You have to cd into the project directory
+cd evote 
+#Then 
+django-admin startapp <whatevernameyouchoose>
+# Mine will be 
+django-admin startapp evote
+
+
+
+#Running your server
+
+
+
+#To run your web app, you will notice that inside the project directory you created you will find a manage.py file, that would be the file you will run
+
+python manage.py runserver
+#Once you run this your terminal ... and you get nothing apart from some text and your localhost running on port 8000 something like this
+
+Watching for file changes with StatReloader
+Performing system checks...
+
+System check identified no issues (0 silenced).
+December 26, 2020 - 08:08:08
+Django version 3.1.3, using settings 'vote. settings'
+Starting development server at http://127.0.0.1:8000/
+Quit the server with CTRL-BREAK.
+
+#Before the process above a migrations has to be made :
+
+python manage.py migrate
+#This will run all Django default packages requirements needed for your web app. Once that is done you can run
+
+python manage.py runserver
+#And you should be good to go 
+
+
+
+#Creating your first view
+
+
+
+#In your project settings.py 
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', include('evote.urls'))
+]
+
+#If you look at it well we added the "include" module from the django.urls repo
+#And created a path to the URLs of our app we are setting an empty path, that will lead to the views of our urls.py file for our app 
+#but you will notice that you don't have a urls.py file in your app. so you create one inside your app directory.
+
+
+#Inside your urls.py
+
+
+from django.urls import pat
+from . import views
+
+urlpatterns = [
+    path('', views.index , name = "index"),
+]
+
+#So above we are importing some Django modules and one of our own 
+#Which is from . import * which means from this directory import all views
+#The path we are creating is somewhat different because we have to reference the views in this directory
+
+
+#inside your views.py
+
+
+def index(request):
+
+    context = {}
+    return render(request, 'index.html', context)
+
+#You will notice that the views here and the views in urls.py match and that is how it is to be
+#We are saying once we type in our web app URL (127.0.0.1:8000) we want to direct them to the index.html page
+#But there is one more thing we are missing and that is the index.html we want to show on our page
+
+
+
+#Creating Templates
+#Note: Before I go on please note all this is been done inside of your app directory you created. 
+Now that is out of the way let us continue by creating a folder inside of our app directory naming it templates, inside this folder we create our index.html file
+
+Index.html
+
+
+<html>
+<head>
+  <title>My homepage </title>
+</head>
+<body>
+ <p>This is the body of the home page </p>
+</body>
+</html>
+
+
+#Run your web app again
+
+
+python manage.py runserver
+#If you ran this and you got no error you should see the index.html template you created has the first page
+#If you got an error please go back and follow the steps and see where you made the error
+
+<!-- In your template folder create an about.html file -->
+<html>
+<head>
+<title>About Evoting </title>
+</head>
+<body>
+<h1>Welcome to about section </h1>
+</body>
+</html>
+
+#In your urls.py create a path to your about page 
+
+path('about/', views.about, name ='about-page"),
+
+#Missing a comma can cause an error so make sure you put one whenever you create a path 
+
+#In your views.py create the about view
+
+def about(request):
+
+context = {}
+ return render(request, 'about.html', context)
+And this should be all if you run the server and type this in your browser
+
+
+
+<!--127.0.0.1:8000/about--!>
+
+#This will take you to the about section
+
+
+
+#User Authentication and Registration
+
+#Before I go on talking about the registration aspect, let me shed a little more light on the project...
+We want to create a web app that will create an avenue where people would able to join and create contests/competitions from a click of a button, 
+in doing so user registration is called for yes.
+
+#So we created a new app inside of our project to handle our user registration and authentication 
+#Thanks to Django some of this process has been simplified 
+
+from django.contrib import messages
+from django.contrib.auth import authenticate, login
+from django.contrib.sites.shortcuts import get_current_site
+from django.shortcuts import render, redirect
+
+from .mail import send_confirm_mail
+from .models import *
+from .forms import CustomAuthForm, UserRegistrationForm, ConfirmationForm
+
+def dashboard(request):
+    if request.user.is_authenticated:
+        context = {}
+        return render(request,'accounts/index.html', context)
+    return redirect('contest:home')
+
+
+def register(request):
+
+    if request.user.is_authenticated:
+        return redirect('account:dashboard')  
+
+    if request.method == 'POST':
+        user_form = UserRegistrationForm(request.POST)
+
+
+        if user_form.is_valid():
+
+            user = CustomUser.objects.filter(email=user_form.cleaned_data['email'])
+
+            if user:
+                context = {'user_form':user_form}
+                messages.error(request, 'Email already exists')
+                return render(request, 'accounts/register.html', context)
+
+            else:
+                new_user = user_form.save(commit=False)
+                new_user.set_password(user_form.cleaned_data['password'])
+                new_user.is_active = False
+                new_user.save()
+                '''
+                try:
+                    send_confirm_mail(user=new_user, email=user_form.cleaned_data['email'])
+                    messages.info(request, 'A confirmation code has been sent to your address, please confirm your email address to activate your account')
+                except:
+                    messages.error(request, 'An error occurred, try re-sending confirmation code')
+                '''
+                send_confirm_mail(user=new_user, email=user_form.cleaned_data['email'])
+                messages.info(request, 'A confirmation code has been sent to your address, please confirm your email address to activate your account')
+                return redirect('account:confirm')
+
+        else:
+            context = {'user_form':user_form}
+            messages.error(request, 'An error occurred during registration.Try again')
+            return render(request, 'accounts/register.html', context)
+    else:
+        user_form = UserRegistrationForm()
+        context = {'user_form':user_form}
+        return render(request, 'accounts/register.html', context)
+
+def confirm(request):
+    if request.method == 'POST':
+        form = ConfirmationForm(request.POST)
+        if form.is_valid():
+            code = form.cleaned_data('confirmation_code')
+            try:
+                user = CustomUser.objects.get(confirmation_code=code).first()
+            except CustomUser.DoesNotExist:
+                messages.error(request, 'Confirmation code is invalid')
+                context = {'form':form}
+                return render(request, 'accounts/confirm.html', context)
+            if user.is_confirmed or user.is_active:
+                messages.info(request, 'Account already confirmed')
+                return redirect('account:confirm')
+
+            user.is_confirmed = True
+            user.is_active = True
+            user.save()
+            messages.success(request, 'Your account has been confirmed. You can log in')
+            return redirect('account:login')
+        else:
+            messages.error(request, 'An error occured during form submission')
+            context = {'form':form}
+            return render(request, 'accounts/confirm.html', context)
+
+
+    form = ConfirmationForm()
+    context = {'form':form}
+    return render(request, 'accounts/confirm.html',context)
+
+
+def login_user(request):
+    if request.user.is_authenticated:
+        return redirect('account:dashboard')
+    else:
+        if request.method == 'POST':
+            form = CustomAuthForm(request.POST)
+            if form.is_valid():
+                cd = form.cleaned_data
+                user = authenticate(request, email = cd['email'], password=cd['password']) 
+                if user is not None:
+                    if user.is_active:
+                        login(request, user)
+                        messages.success(request, 'Logged in successfully')
+                        return redirect('account:dashboard')
+                else:
+                    messages.error(request, 'Account does not exist')
+        form = CustomAuthForm()
+        context = {'form': form}
+        return render(request, 'accounts/login.html', context)
+#Note: Updates will be made to the repo in due time
+
+
