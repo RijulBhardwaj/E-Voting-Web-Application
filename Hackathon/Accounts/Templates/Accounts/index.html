@@ -1,0 +1,51 @@
+{%  extends 'accounts/base.html' %}
+
+{% block title %}DashBoard{% endblock %}
+{% block body %}
+    <div class="main_content">
+        <div class="header">My Profile</div>  
+        <div class="info">
+        <div class='row justify-content-center'>
+            <div class="col-lg-12">
+                <center>
+                    <img src="{{user.qr_code.url}}" alt="Qrcode" class="mb-2" width='300px' height='300px'>
+                    <br>
+                    <a class='btn btn-primary btn-block' href='{{user.qr_code.url}}' download='{{user.name}}.jpg'>Download QRCode</a>
+                    <p class='mt-1' style='font-size:12px'>Warning: Your QRcode is personal and should be secured.</p>
+                    
+                    <h3 class='mt-2'>{{user.name}}</h3>
+                    <p>{{user.email}}</p>
+                </center>
+            </div>
+        </div>
+            <div class="container" style="float: right;">
+                <h3>My Contests</h3>
+                {% if not contests %}
+                    <div style='background-color: #ffffff; padding:20px'>
+                        <div><p class='text-muted text-small'>You haven't created any contest yet</p></div>
+                    </div>
+                {% else %}
+                    {% for contest in contests %}
+                        <div style='background-color: #ffffff; padding:20px'>
+                            <div>
+                                <p style='float:right'><i class='fas fa-poll'></i> 0 total votes</p>
+                                <h4>{{contest.name}}</h4>
+                                <p>{{contest.description}}</p>
+                                Contest Code: {{contest.contest_code}}<br>
+                                <h5 class='mt-2'>Contestants:</h5>
+                                {% for contestant in contest.contestant_set.all %}
+                                    <p>{{contestant.name}}<br><small>{{contestant.manifesto}}</small></p>
+                                {% endfor %}
+                                
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                <h3>Joined Contests</h3>
+                <div style='background-color: #ffffff; padding:20px'>
+                    <div><p class="text-muted text-small">You haven't joined any contest yet</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock%}
